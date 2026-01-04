@@ -75,11 +75,13 @@ DB_CHARSET=utf8mb4
 ## Démarrer le serveur
 
 **Avec PHP intégré:**
+
 ```bash
 php -S localhost:8000
 ```
 
 **Avec Apache:**
+
 ```
 http://localhost/mvc/
 ```
@@ -105,11 +107,13 @@ php console make:middleware AdminMiddleware
 ## Créer une première page
 
 ### 1. Créer un contrôleur
+
 ```bash
 php console make:controller BlogController
 ```
 
 ### 2. Éditez `app/controllers/BlogController.php`:
+
 ```php
 <?php
 namespace App\Controllers;
@@ -123,13 +127,14 @@ class BlogController extends Controller
             ['id' => 1, 'title' => 'Mon premier post'],
             ['id' => 2, 'title' => 'Mon second post'],
         ];
-        
+
         $this->view('blog/index', ['posts' => $posts]);
     }
 }
 ```
 
 ### 3. Créez la vue `app/views/blog/index.php`:
+
 ```php
 <h1>Blog</h1>
 <ul>

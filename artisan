@@ -31,6 +31,18 @@ switch ($command) {
     case 'make:middleware':
         makeMiddleware($argument);
         break;
+    case 'migrate':
+        migrateCommand();
+        break;
+    case 'migrate:rollback':
+        migrateRollback();
+        break;
+    case 'migrate:refresh':
+        migrateRefresh();
+        break;
+    case 'make:migration':
+        makeMigration($argument);
+        break;
     case 'tinker':
         tinkerCommand();
         break;
@@ -54,7 +66,7 @@ function serveCommand($port = null)
     echo "Press Ctrl+C to stop the server\n\n";
 
     $command = "php -S $host:$port";
-    
+
     if (PHP_OS_FAMILY === 'Windows') {
         system($command);
     } else {
@@ -73,7 +85,7 @@ function makeController($name)
     }
 
     $path = __DIR__ . "/app/controllers/{$name}.php";
-    
+
     if (file_exists($path)) {
         echo "❌ Controller $name already exists!\n";
         exit(1);
@@ -111,7 +123,7 @@ function makeModel($name)
     }
 
     $path = __DIR__ . "/app/models/{$name}.php";
-    
+
     if (file_exists($path)) {
         echo "❌ Model $name already exists!\n";
         exit(1);
@@ -172,7 +184,7 @@ function makeMiddleware($name)
     }
 
     $path = __DIR__ . "/app/middleware/{$name}.php";
-    
+
     if (file_exists($path)) {
         echo "❌ Middleware $name already exists!\n";
         exit(1);
@@ -202,40 +214,135 @@ PHP;
 }
 
 // ============================================
-// COMMANDE: tinker
+// COMMANDE: migrate
 // ============================================
-function tinkerCommand()
+function migrateCommand()
 {
-    echo "\n🔧 BondoMVC Tinker (Interactive Shell)\n";
+    require __DIR__ . '/config/config.php';
+    
+    use Core\Migration;
+    
+    $migration = new Migration();
+    $migration->runMigrations();
+}
+
+// ============================================
+// COMMANDE: migrate:rollback
+// ============================================
+function migrateRollback()
+{
+    require __DIR__ . '/config/config.php';
+    
+    use Core\Migration;
+    
+    $migration = new Migration();
+    $migration->rollback();
+}
+
+// ============================================
+// COMMANDE: migrate:refresh
+// ============================================
+function migrateRefresh()
+{
+    require __DIR__ . '/config/config.php';
+    
+    use Core\Migration;
+    
+    echo "🔄 Refreshing migrations...\n";
+    
+    $migration = new Migration();
+    
+    // Rollback all
+    while (true) {
+        try {
+            $migration->rollback();
+        } catch (\Exception $e) {
+            break;
+        }
+    }
+    
+    // Run all
+    $migration->runMigrations();
+}
+
+// ============================================
+// COMMANDE: make:migration
+// ============================================
+function makeMigration($name)
+{
+    if (!$name) {
+        echo "❌ Usage: php artisan make:migration MigrationName\n";
+        exit(1);
+    }
+
+    $timestamp = date('Y_m_d_His');
+    $filename = "{$timestamp}_{$name}.php";
+    $path = __DIR__ . "/database/migrations/{$filename}";
+
+    $className = str_replace('_', '', ucwords($name, '_'));
+
+    $stub = <<<PHP
+<?php
+
+namespace Database\Migrations;
+
+use Core\Database;
+
+/**
+ * Migration: {$name}
+ */
+class {$className} extends Migration
+{
+    public function up(Database \$db)
+    {
+        // TODO: Create your table
+        // \$sql = "CREATE TABLE table_name (...)";
+        // \$db->getConnection()->exec(\$sql);
+    }
+
+    public function down(Database \$db)
+    {
+        // TODO: Drop your table
+        // \$db->getConnection()->exec("DROP TABLE IF EXISTS table_name");
+    }
+}
+PHP;
+
+    file_put_contents($path, $stub);
+    echo "✓ Migration created: database/migrations/{$filename}\n";
+    echo "💡 Edit the file and run: php artisan migrate\n";
+}
+
+// ============================================
     echo "========================================\n\n";
     echo "Type 'exit' or 'quit' to exit\n";
     echo "Example: \$model = new \\App\\Models\\User();\n\n";
 
     // Simple REPL
     $history = [];
-    
+
     while (true) {
         echo ">>> ";
         $line = trim(fgets(STDIN));
-        
+
         if (in_array($line, ['exit', 'quit'])) {
             echo "Goodbye!\n";
             break;
         }
-        
+
         if (empty($line)) {
             continue;
         }
-        
+
         try {
             ob_start();
             eval('?' . '>' . $line . ';');
             $output = ob_get_clean();
-            
+
             if ($output) {
                 echo $output . "\n";
             }
-            
+
             $history[] = $line;
         } catch (Exception $e) {
             echo "Error: " . $e->getMessage() . "\n";
@@ -252,23 +359,35 @@ function showHelp()
     echo "=======================\n\n";
     echo "Usage: php artisan <command> [options]\n\n";
     echo "Available Commands:\n\n";
-    
+
     echo "  serve [port]                  Start development server (default: 8000)\n";
     echo "    php artisan serve\n";
     echo "    php artisan serve 3000\n\n";
-    
+
     echo "  make:controller <name>        Create a new controller\n";
     echo "    php artisan make:controller ProductController\n\n";
-    
+
     echo "  make:model <name>             Create a new model\n";
     echo "    php artisan make:model Product\n\n";
-    
+
     echo "  make:middleware <name>        Create a new middleware\n";
     echo "    php artisan make:middleware AdminMiddleware\n\n";
-    
+
+    echo "  make:migration <name>         Create a new migration\n";
+    echo "    php artisan make:migration CreateUsersTable\n\n";
+
+    echo "  migrate                       Run pending migrations\n";
+    echo "    php artisan migrate\n\n";
+
+    echo "  migrate:rollback              Rollback last migration batch\n";
+    echo "    php artisan migrate:rollback\n\n";
+
+    echo "  migrate:refresh               Rollback all and re-run migrations\n";
+    echo "    php artisan migrate:refresh\n\n";
+
     echo "  tinker                        Interactive PHP shell\n";
     echo "    php artisan tinker\n\n";
-    
+
     echo "  help, --help, -h              Show this help message\n\n";
 }
 ?>
