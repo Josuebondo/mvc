@@ -5,6 +5,7 @@
 ### Configuration
 
 Dans votre `.env`:
+
 ```env
 UPLOAD_MAX_SIZE=5242880
 UPLOAD_ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,pdf,doc,docx,xlsx,zip,txt,csv
@@ -13,6 +14,7 @@ UPLOAD_ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,pdf,doc,docx,xlsx,zip,txt,csv
 ### Usage
 
 Validation et upload simple:
+
 ```php
 $upload = new \Core\FileUpload($_FILES['avatar'], 'avatars');
 
@@ -30,12 +32,14 @@ if ($upload->isValid()) {
 ### Options avancées
 
 Personnaliser la taille maximum:
+
 ```php
 $upload = new \Core\FileUpload($_FILES['document'], 'documents');
 $upload->setMaxSize(10 * 1024 * 1024); // 10MB
 ```
 
 Autoriser uniquement certains types:
+
 ```php
 $upload->setAllowedTypes([
     'pdf' => 'application/pdf',
@@ -46,6 +50,7 @@ $upload->setAllowedTypes([
 ### Sécurité
 
 La classe FileUpload protège contre:
+
 - ✅ Les fichiers malveillants (vérification MIME type)
 - ✅ Les noms de fichiers avec caractères spéciaux
 - ✅ Les débordements de taille
@@ -71,13 +76,13 @@ class ProfileController extends Controller
         }
 
         $upload = new FileUpload($_FILES['avatar'], 'avatars');
-        
+
         if (!$upload->isValid()) {
             return $this->json(['errors' => $upload->getErrors()], 422);
         }
 
         $path = $upload->save();
-        
+
         // Update user avatar in database
         $user = auth()->user();
         // $userModel->update($user['id'], ['avatar' => $path]);
@@ -98,6 +103,7 @@ class ProfileController extends Controller
 ### Configuration
 
 Dans votre `.env`:
+
 ```env
 MAIL_DRIVER=php
 MAIL_FROM=noreply@bondomvc.local
@@ -111,6 +117,7 @@ MAIL_PASSWORD=
 ### Usage Simple
 
 Email HTML:
+
 ```php
 use Core\Email;
 
@@ -122,6 +129,7 @@ $email->to('user@example.com')
 ```
 
 Email texte:
+
 ```php
 $email = new Email();
 $email->to('user@example.com')
@@ -141,6 +149,7 @@ $email->to('user@example.com')
 ```
 
 Templates disponibles dans `app/views/emails/`:
+
 - `welcome.php` - Email de bienvenue
 - `reset-password.php` - Réinitialisation mot de passe
 
@@ -193,11 +202,11 @@ class PasswordController extends Controller
     public function resetPassword()
     {
         $email = request()->input('email');
-        
+
         // Générer un token de réinitialisation
         $resetToken = bin2hex(random_bytes(32));
         $resetLink = url('/reset-password?token=' . $resetToken);
-        
+
         // Envoyer l'email
         $mail = new Email();
         $mail->to($email)
@@ -207,7 +216,7 @@ class PasswordController extends Controller
                  'expiresIn' => '24 heures'
              ])
              ->send();
-        
+
         return $this->json(['message' => 'Email envoyé']);
     }
 }
@@ -216,6 +225,7 @@ class PasswordController extends Controller
 ### Mode Test
 
 Tester votre configuration email:
+
 ```php
 if (Email::test('votre-email@example.com')) {
     echo "Email de test envoyé avec succès!";
@@ -243,6 +253,7 @@ Créez un fichier `app/views/emails/ma-template.php`:
 ```
 
 Utiliser le template:
+
 ```php
 $email = new Email();
 $email->to('user@example.com')
@@ -267,6 +278,7 @@ Les uploads et emails sont **loggés automatiquement** dans `storage/logs/`:
 ```
 
 Consulter les logs:
+
 ```php
 use Core\Logger;
 
@@ -279,6 +291,7 @@ $files = Logger::getLogFiles();
 ## Sécurité
 
 ### File Upload
+
 - ✅ Vérification MIME type stricte
 - ✅ Sanitization des noms de fichiers
 - ✅ Protection contre inclusion de code
@@ -286,6 +299,7 @@ $files = Logger::getLogFiles();
 - ✅ Répertoire uploads hors `public/`
 
 ### Email
+
 - ✅ Validation format email
 - ✅ Échappement HTML dans templates
 - ✅ Headers injectés échappés
@@ -297,12 +311,14 @@ $files = Logger::getLogFiles();
 ## Troubleshooting
 
 ### File upload "Permission denied"
+
 ```php
 // Vérifier les permissions du dossier storage/uploads
 chmod('storage/uploads', 0755);
 ```
 
 ### Email ne s'envoie pas
+
 ```php
 // Vérifier logs
 $logs = Logger::getLogs();
@@ -315,6 +331,7 @@ Config::get('MAIL_FROM'); // doit avoir une valeur
 ```
 
 ### Upload timeout
+
 ```php
 // Dans .env, augmenter la limite
 UPLOAD_MAX_SIZE=52428800  // 50MB
