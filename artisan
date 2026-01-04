@@ -1,0 +1,274 @@
+#!/usr/bin/env php
+<?php
+/**
+ * BondoMVC Artisan-like CLI Tool
+ * Similar to Laravel's artisan command
+ */
+
+if (php_sapi_name() !== 'cli') {
+    die('This script can only be run from the command line.');
+}
+
+$command = $argv[1] ?? null;
+$argument = $argv[2] ?? null;
+
+if (!$command || in_array($command, ['--help', '-h', 'help'])) {
+    showHelp();
+    exit(0);
+}
+
+// Routes des commandes
+switch ($command) {
+    case 'serve':
+        serveCommand($argument);
+        break;
+    case 'make:controller':
+        makeController($argument);
+        break;
+    case 'make:model':
+        makeModel($argument);
+        break;
+    case 'make:middleware':
+        makeMiddleware($argument);
+        break;
+    case 'tinker':
+        tinkerCommand();
+        break;
+    default:
+        echo "❌ Commande inconnue: $command\n\n";
+        showHelp();
+        exit(1);
+}
+
+// ============================================
+// COMMANDE: serve
+// ============================================
+function serveCommand($port = null)
+{
+    $port = $port ?: '8000';
+    $host = 'localhost';
+
+    echo "\n🚀 BondoMVC Development Server\n";
+    echo "================================\n\n";
+    echo "Server running at: http://$host:$port\n";
+    echo "Press Ctrl+C to stop the server\n\n";
+
+    $command = "php -S $host:$port";
+    
+    if (PHP_OS_FAMILY === 'Windows') {
+        system($command);
+    } else {
+        passthru($command);
+    }
+}
+
+// ============================================
+// COMMANDE: make:controller
+// ============================================
+function makeController($name)
+{
+    if (!$name) {
+        echo "❌ Usage: php artisan make:controller NomController\n";
+        exit(1);
+    }
+
+    $path = __DIR__ . "/app/controllers/{$name}.php";
+    
+    if (file_exists($path)) {
+        echo "❌ Controller $name already exists!\n";
+        exit(1);
+    }
+
+    $stub = <<<PHP
+<?php
+
+namespace App\Controllers;
+
+use Core\Controller;
+
+class {$name} extends Controller
+{
+    public function index()
+    {
+        \$this->view('{strtolower($name)}/index');
+    }
+}
+PHP;
+
+    file_put_contents($path, $stub);
+    echo "✓ Controller created: app/controllers/{$name}.php\n";
+    echo "💡 Create view: app/views/" . strtolower($name) . "/index.php\n";
+}
+
+// ============================================
+// COMMANDE: make:model
+// ============================================
+function makeModel($name)
+{
+    if (!$name) {
+        echo "❌ Usage: php artisan make:model NomModel\n";
+        exit(1);
+    }
+
+    $path = __DIR__ . "/app/models/{$name}.php";
+    
+    if (file_exists($path)) {
+        echo "❌ Model $name already exists!\n";
+        exit(1);
+    }
+
+    $table = strtolower($name) . 's';
+    $stub = <<<PHP
+<?php
+
+namespace App\Models;
+
+use Core\Model;
+
+class {$name} extends Model
+{
+    protected string \$table = '{$table}';
+
+    public function getAll()
+    {
+        return \$this->db()->fetchAll("SELECT * FROM {\$this->table}");
+    }
+
+    public function getById(\$id)
+    {
+        return \$this->db()->fetch("SELECT * FROM {\$this->table} WHERE id = ?", [\$id]);
+    }
+
+    public function create(\$data)
+    {
+        return \$this->db()->insert(\$this->table, \$data);
+    }
+
+    public function update(\$id, \$data)
+    {
+        return \$this->db()->update(\$this->table, \$data, ['id' => \$id]);
+    }
+
+    public function delete(\$id)
+    {
+        return \$this->db()->delete(\$this->table, ['id' => \$id]);
+    }
+}
+PHP;
+
+    file_put_contents($path, $stub);
+    echo "✓ Model created: app/models/{$name}.php\n";
+    echo "💡 Create table: {$table}\n";
+}
+
+// ============================================
+// COMMANDE: make:middleware
+// ============================================
+function makeMiddleware($name)
+{
+    if (!$name) {
+        echo "❌ Usage: php artisan make:middleware NomMiddleware\n";
+        exit(1);
+    }
+
+    $path = __DIR__ . "/app/middleware/{$name}.php";
+    
+    if (file_exists($path)) {
+        echo "❌ Middleware $name already exists!\n";
+        exit(1);
+    }
+
+    $stub = <<<PHP
+<?php
+
+namespace App\Middleware;
+
+use Core\Middleware;
+
+class {$name} extends Middleware
+{
+    public function handle(): bool
+    {
+        // Your logic here
+        
+        return true;  // Continue
+        // return false;  // Stop
+    }
+}
+PHP;
+
+    file_put_contents($path, $stub);
+    echo "✓ Middleware created: app/middleware/{$name}.php\n";
+}
+
+// ============================================
+// COMMANDE: tinker
+// ============================================
+function tinkerCommand()
+{
+    echo "\n🔧 BondoMVC Tinker (Interactive Shell)\n";
+    echo "========================================\n\n";
+    echo "Type 'exit' or 'quit' to exit\n";
+    echo "Example: \$model = new \\App\\Models\\User();\n\n";
+
+    // Simple REPL
+    $history = [];
+    
+    while (true) {
+        echo ">>> ";
+        $line = trim(fgets(STDIN));
+        
+        if (in_array($line, ['exit', 'quit'])) {
+            echo "Goodbye!\n";
+            break;
+        }
+        
+        if (empty($line)) {
+            continue;
+        }
+        
+        try {
+            ob_start();
+            eval('?' . '>' . $line . ';');
+            $output = ob_get_clean();
+            
+            if ($output) {
+                echo $output . "\n";
+            }
+            
+            $history[] = $line;
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        }
+    }
+}
+
+// ============================================
+// AIDE
+// ============================================
+function showHelp()
+{
+    echo "\n📚 BondoMVC Artisan CLI\n";
+    echo "=======================\n\n";
+    echo "Usage: php artisan <command> [options]\n\n";
+    echo "Available Commands:\n\n";
+    
+    echo "  serve [port]                  Start development server (default: 8000)\n";
+    echo "    php artisan serve\n";
+    echo "    php artisan serve 3000\n\n";
+    
+    echo "  make:controller <name>        Create a new controller\n";
+    echo "    php artisan make:controller ProductController\n\n";
+    
+    echo "  make:model <name>             Create a new model\n";
+    echo "    php artisan make:model Product\n\n";
+    
+    echo "  make:middleware <name>        Create a new middleware\n";
+    echo "    php artisan make:middleware AdminMiddleware\n\n";
+    
+    echo "  tinker                        Interactive PHP shell\n";
+    echo "    php artisan tinker\n\n";
+    
+    echo "  help, --help, -h              Show this help message\n\n";
+}
+?>
