@@ -1,0 +1,156 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * BondoMVC Console - Générateur de code
+ * Usage: php console make:controller NomController
+ */
+
+$command = $argv[1] ?? null;
+$argument = $argv[2] ?? null;
+
+if (!$command || !$argument) {
+    echo "BondoMVC Console\n";
+    echo "Usage: php console [command] [name]\n\n";
+    echo "Commands:\n";
+    echo "  make:controller <name>  - Créer un contrôleur\n";
+    echo "  make:model <name>       - Créer un modèle\n";
+    echo "  make:middleware <name>  - Créer un middleware\n";
+    exit(1);
+}
+
+[$type, $name] = explode(':', $command);
+
+if ($type !== 'make') {
+    echo "❌ Commande invalide\n";
+    exit(1);
+}
+
+switch ($name) {
+    case 'controller':
+        createController($argument);
+        break;
+    case 'model':
+        createModel($argument);
+        break;
+    case 'middleware':
+        createMiddleware($argument);
+        break;
+    default:
+        echo "❌ Type invalide: $name\n";
+        exit(1);
+}
+
+function createController($name)
+{
+    $path = __DIR__ . "/app/controllers/{$name}.php";
+
+    if (file_exists($path)) {
+        echo "❌ Le contrôleur $name existe déjà!\n";
+        exit(1);
+    }
+
+    $content = <<<PHP
+<?php
+
+namespace App\Controllers;
+
+use Core\Controller;
+
+class {$name} extends Controller
+{
+    public function index()
+    {
+        \$this->view('{' . strtolower($name) . '}/index');
+    }
+}
+PHP;
+
+    file_put_contents($path, $content);
+    echo "✓ Contrôleur créé: app/controllers/{$name}.php\n";
+}
+
+function createModel($name)
+{
+    $path = __DIR__ . "/app/models/{$name}.php";
+
+    if (file_exists($path)) {
+        echo "❌ Le modèle $name existe déjà!\n";
+        exit(1);
+    }
+
+    $table = strtolower($name) . 's';
+    $content = <<<PHP
+<?php
+
+namespace App\Models;
+
+use Core\Model;
+
+class {$name} extends Model
+{
+    protected string \$table = '{$table}';
+
+    public function getAll()
+    {
+        return \$this->db()->fetchAll("SELECT * FROM {\$this->table}");
+    }
+
+    public function getById(\$id)
+    {
+        return \$this->db()->fetch("SELECT * FROM {\$this->table} WHERE id = ?", [\$id]);
+    }
+
+    public function create(\$data)
+    {
+        return \$this->db()->insert(\$this->table, \$data);
+    }
+
+    public function update(\$id, \$data)
+    {
+        return \$this->db()->update(\$this->table, \$data, ['id' => \$id]);
+    }
+
+    public function delete(\$id)
+    {
+        return \$this->db()->delete(\$this->table, ['id' => \$id]);
+    }
+}
+PHP;
+
+    file_put_contents($path, $content);
+    echo "✓ Modèle créé: app/models/{$name}.php\n";
+    echo "💡 N'oublie pas de créer la table: {$table}\n";
+}
+
+function createMiddleware($name)
+{
+    $path = __DIR__ . "/app/middleware/{$name}.php";
+
+    if (file_exists($path)) {
+        echo "❌ Le middleware $name existe déjà!\n";
+        exit(1);
+    }
+
+    $content = <<<PHP
+<?php
+
+namespace App\Middleware;
+
+use Core\Middleware;
+
+class {$name} extends Middleware
+{
+    public function handle(): bool
+    {
+        // Votre logique ici
+        
+        return true; // Continuer
+        // return false; // Arrêter
+    }
+}
+PHP;
+
+    file_put_contents($path, $content);
+    echo "✓ Middleware créé: app/middleware/{$name}.php\n";
+}

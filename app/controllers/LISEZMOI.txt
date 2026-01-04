@@ -1,0 +1,12 @@
+BondoMVC - Framework vierge
+==============================
+
+Structure prête pour un nouveau projet.
+
+À faire:
+1. Configurer .env
+2. Créer les contrôleurs avec: php console make:controller
+3. Créer les modèles avec: php console make:model
+4. Créer vos vues dans app/views/
+
+Voir INSTALLATION.md pour commencer.
