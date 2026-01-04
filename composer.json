@@ -26,11 +26,7 @@
   },
   "scripts": {
     "post-create-project-cmd": [
-      "@setup-project"
-    ],
-    "setup-project": [
-      "php -r \"copy('.env.example', '.env');\"",
-      "@php console make:controller HomeController"
+      "php -r \"copy('.env.example', '.env');\""
     ]
   },
   "extra": {
