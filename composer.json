@@ -29,6 +29,26 @@
       "php -r \"copy('.env.example', '.env');\""
     ]
   },
+  "exclude-from-dist": [
+    "tests",
+    ".git",
+    ".gitignore",
+    ".env.example",
+    "phpunit.xml",
+    "DOCS.md",
+    "AUTH.md",
+    "EXAMPLES.md",
+    "TESTS.md",
+    "README.md",
+    "INSTALLATION.md",
+    "INSTALL_MULTIPC.md",
+    "DEMO_INSTALL.md",
+    "FILE_UPLOAD_EMAIL.md",
+    "SANS_COMPOSER.md",
+    "PACKAGIST.md",
+    "XAMPP.md",
+    "CLEANUP.md"
+  ],
   "extra": {
     "branch-alias": {
       "dev-main": "1.0-dev"
@@ -41,8 +61,8 @@
     "router",
     "lightweight"
   ],
-  "homepage": "https://github.com/bondomvc/framework",
+  "homepage": "https://github.com/Josuebondo/mvc",
   "support": {
-    "issues": "https://github.com/bondomvc/framework/issues"
+    "issues": "https://github.com/Josuebondo/mvc/issues"
   }
 }
