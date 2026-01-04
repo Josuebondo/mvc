@@ -64,9 +64,9 @@
 
             <p>Vous pouvez maintenant accéder à votre compte et commencer à explorer toutes les fonctionnalités disponibles.</p>
 
-            <center>
+            <div style="text-align: center;">
                 <a href="<?php echo Config::getAppUrl(); ?>/dashboard" class="button">Accéder à mon compte</a>
-            </center>
+            </div>
 
             <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
 

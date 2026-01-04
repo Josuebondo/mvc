@@ -221,7 +221,7 @@ PHP;
 function migrateCommand()
 {
     require __DIR__ . '/config/config.php';
-    
+
     $migration = new Migration();
     $migration->runMigrations();
 }
@@ -232,7 +232,7 @@ function migrateCommand()
 function migrateRollback()
 {
     require __DIR__ . '/config/config.php';
-    
+
     $migration = new Migration();
     $migration->rollback();
 }
@@ -243,11 +243,11 @@ function migrateRollback()
 function migrateRefresh()
 {
     require __DIR__ . '/config/config.php';
-    
+
     echo "🔄 Refreshing migrations...\n";
-    
+
     $migration = new Migration();
-    
+
     // Rollback all
     while (true) {
         try {
@@ -256,7 +256,7 @@ function migrateRefresh()
             break;
         }
     }
-    
+
     // Run all
     $migration->runMigrations();
 }
@@ -310,6 +310,12 @@ PHP;
 }
 
 // ============================================
+// COMMANDE: tinker
+// ============================================
+function tinkerCommand()
+{
+    require __DIR__ . '/config/config.php';
+
     echo "========================================\n\n";
     echo "Type 'exit' or 'quit' to exit\n";
     echo "Example: \$model = new \\App\\Models\\User();\n\n";
