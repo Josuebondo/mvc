@@ -23,13 +23,16 @@ class Auth
         // Récupérer l'utilisateur en session
         if (isset($_SESSION['user_id'])) {
             self::$user = self::$userModel->getById($_SESSION['user_id']);
+        } elseif (isset($_COOKIE['remember_token'])) {
+            // Check remember me token
+            self::checkRememberToken($_COOKIE['remember_token']);
         }
     }
 
     /**
      * Vérifier les credentials et connecter
      */
-    public static function attempt(string $email, string $password): bool
+    public static function attempt(string $email, string $password, bool $remember = false): bool
     {
         $user = self::$userModel->getByEmail($email);
 
@@ -42,17 +45,49 @@ class Auth
         }
 
         // Connecter l'utilisateur
-        self::login($user);
+        self::login($user, $remember);
         return true;
     }
 
     /**
      * Connecter manuellement un utilisateur
      */
-    public static function login(array $user)
+    public static function login(array $user, bool $remember = false)
     {
         $_SESSION['user_id'] = $user['id'];
         self::$user = $user;
+
+        // Set remember me cookie
+        if ($remember) {
+            $token = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $token);
+
+            // Store in database (would need a tokens table)
+            // For now, just set the cookie
+            setcookie(
+                'remember_token',
+                $token,
+                time() + (30 * 24 * 60 * 60), // 30 days
+                '/',
+                '',
+                isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                true // httpOnly
+            );
+
+            Logger::info('Remember me token set for user {user_id}', ['user_id' => $user['id']]);
+        }
+    }
+
+    /**
+     * Check remember token and login user
+     */
+    private static function checkRememberToken(string $token): void
+    {
+        // In production, you should store tokens in database and validate them
+        // This is a simplified version
+        $hashedToken = hash('sha256', $token);
+        Logger::info('Checking remember token');
+        // TODO: Implement database token validation
     }
 
     /**
@@ -90,6 +125,11 @@ class Auth
     {
         unset($_SESSION['user_id']);
         self::$user = null;
+
+        // Clear remember token
+        setcookie('remember_token', '', time() - 3600, '/', '', false, true);
+
+        Logger::info('User logged out');
     }
 
     /**

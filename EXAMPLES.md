@@ -13,6 +13,7 @@ php artisan make:migration CreatePostsTable
 ```
 
 **Migration** (database/migrations/TIMESTAMP_create_posts_table.php):
+
 ```php
 public function up(Database $db)
 {
@@ -25,26 +26,27 @@ public function up(Database $db)
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (author_id) REFERENCES users(id)
     )";
-    
+
     $db->getConnection()->exec($sql);
 }
 ```
 
 **Contrôleur** (app/controllers/PostController.php):
+
 ```php
 class PostController extends Controller
 {
     private $post;
-    
+
     public function __construct() {
         $this->post = new Post();
     }
-    
+
     public function index() {
         $posts = $this->post->getAll();
         $this->view('posts/index', ['posts' => $posts]);
     }
-    
+
     public function show($id) {
         $post = $this->post->getById($id);
         $this->view('posts/show', ['post' => $post]);
@@ -69,6 +71,7 @@ php artisan make:migration CreateOrdersTable
 ```
 
 **ProductController**:
+
 ```php
 class ProductController extends Controller
 {
@@ -76,7 +79,7 @@ class ProductController extends Controller
         $products = (new Product())->getAll();
         $this->view('products/index', ['products' => $products]);
     }
-    
+
     public function show($id) {
         $product = (new Product())->getById($id);
         $this->view('products/show', ['product' => $product]);
@@ -85,6 +88,7 @@ class ProductController extends Controller
 ```
 
 **CartController**:
+
 ```php
 class CartController extends Controller
 {
@@ -94,12 +98,12 @@ class CartController extends Controller
             redirect('/auth/login');
         }
     }
-    
+
     public function index() {
         $cart = session('cart') ?? [];
         $this->view('cart/index', ['cart' => $cart]);
     }
-    
+
     public function addItem($productId) {
         $cart = session('cart') ?? [];
         $cart[$productId] = ($cart[$productId] ?? 0) + 1;
@@ -122,24 +126,25 @@ php artisan make:migration CreateEventsTable
 ```
 
 **Exemple**:
+
 ```php
 class EventController extends Controller
 {
     private $event;
-    
+
     public function __construct() {
         $this->event = new Event();
     }
-    
+
     public function upcoming() {
         $events = $this->event->getUpcoming();
         $this->view('events/upcoming', ['events' => $events]);
     }
-    
+
     public function calendar($month = null) {
         $month = $month ?? date('m');
         $year = date('Y');
-        
+
         $events = $this->event->getByMonth($month, $year);
         $this->view('events/calendar', ['events' => $events]);
     }
@@ -158,6 +163,7 @@ php artisan make:controller Api/PostController
 ```
 
 **UserController API**:
+
 ```php
 namespace App\Controllers\Api;
 
@@ -167,17 +173,17 @@ class UserController
         $users = (new UserModel())->getAll();
         return $this->json(['data' => $users]);
     }
-    
+
     public function show($id) {
         $user = (new UserModel())->getById($id);
-        
+
         if (!$user) {
             return $this->json(['error' => 'Not found'], 404);
         }
-        
+
         return $this->json(['data' => $user]);
     }
-    
+
     private function json($data, $status = 200) {
         http_response_code($status);
         header('Content-Type: application/json');
@@ -187,6 +193,7 @@ class UserController
 ```
 
 **Routes**:
+
 - `GET /api/users` → Liste
 - `GET /api/users/1` → Détail
 - `POST /api/users` → Créer
@@ -206,11 +213,11 @@ class AdminController extends Controller
 {
     public function __construct() {
         $middleware = new AuthMiddleware();
-        
+
         if (!$middleware->handle()) {
             exit;
         }
-        
+
         // Vérifier admin
         if (Auth::user()['role'] !== 'admin') {
             abort(403);
@@ -230,11 +237,11 @@ class ProductController extends Controller
 {
     public function search() {
         $q = getInput('q');
-        
+
         if (!$q) {
             redirect('/products');
         }
-        
+
         $products = (new Product())->search($q);
         $this->view('products/search', ['products' => $products, 'q' => $q]);
     }
@@ -242,6 +249,7 @@ class ProductController extends Controller
 ```
 
 **Model**:
+
 ```php
 public function search($query) {
     return $this->db()->fetchAll(
@@ -263,6 +271,7 @@ php artisan make:middleware AdminMiddleware
 ```
 
 **AdminController**:
+
 ```php
 class AdminController extends Controller
 {
@@ -272,14 +281,14 @@ class AdminController extends Controller
             redirect('/');
         }
     }
-    
+
     public function dashboard() {
         $stats = [
             'users' => (new UserModel())->count(),
             'posts' => (new Post())->count(),
             'orders' => (new Order())->count()
         ];
-        
+
         $this->view('admin/dashboard', $stats);
     }
 }

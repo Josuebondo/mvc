@@ -8,6 +8,18 @@ class App
     protected string $method = 'index';
     protected array $params = [];
 
+    public function __construct()
+    {
+        // Initialize error handling
+        ErrorHandler::initialize();
+
+        // Load configuration
+        Config::load();
+
+        // Log app start
+        Logger::info('Application started', ['url' => $_SERVER['REQUEST_URI'] ?? 'CLI']);
+    }
+
     public function run(): void
     {
         $url = $this->parseUrl();
@@ -18,7 +30,8 @@ class App
                 $this->controller = ucfirst($url[0]) . 'Controller';
                 unset($url[0]);
             } else {
-                $this->show404();
+                Logger::warning('Controller not found: {controller}', ['controller' => $url[0]]);
+                ErrorHandler::show404();
                 return;
             }
         }
@@ -26,7 +39,8 @@ class App
         $controllerClass = "App\\Controllers\\{$this->controller}";
 
         if (!class_exists($controllerClass)) {
-            $this->show404();
+            Logger::warning('Class not found: {class}', ['class' => $controllerClass]);
+            ErrorHandler::show404();
             return;
         }
 
@@ -45,20 +59,23 @@ class App
         }
 
         if (!method_exists($this->controller, $this->method)) {
-            $this->show404();
+            Logger::warning('Method not found: {class}::{method}', [
+                'class' => $this->controller::class,
+                'method' => $this->method
+            ]);
+            ErrorHandler::show404();
             return;
         }
 
         // PARAMS
         $this->params = $url ? array_values($url) : [];
 
-        call_user_func_array([$this->controller, $this->method], $this->params);
-    }
+        Logger::info('Route matched: {controller}::{method}', [
+            'controller' => $this->controller,
+            'method' => $this->method
+        ]);
 
-    protected function show404(): void
-    {
-        http_response_code(404);
-        include __DIR__ . '/../app/views/errors/404.php';
+        call_user_func_array([$this->controller, $this->method], $this->params);
     }
 
     protected function controllerExists(string $name): bool

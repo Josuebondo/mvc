@@ -5,7 +5,7 @@
 ### Méthode 1: Via Composer Create-Project (Recommandée)
 
 ```bash
-composer create-project bondomvc/framework MonProjet
+composer create-project bondomvc/mvc MonProjet
 ```
 
 **Advantages:**
@@ -19,7 +19,7 @@ composer create-project bondomvc/framework MonProjet
 ### Méthode 2: Via Git Clone
 
 ```bash
-git clone https://github.com/bondomvc/framework.git MonProjet
+git clone https://github.com/Josuebondo/mvc.git MonProjet
 cd MonProjet
 composer install
 cp .env.example .env
@@ -27,7 +27,7 @@ cp .env.example .env
 
 ### Méthode 3: Manuel (Téléchargement ZIP)
 
-1. Télécharger: https://github.com/bondomvc/framework/archive/refs/heads/main.zip
+1. Télécharger: https://github.com/Josuebondo/mvc/archive/refs/heads/main.zip
 2. Décompresser dans `htdocs`
 3. Exécuter: `composer install`
 4. Copier: `cp .env.example .env`
@@ -135,7 +135,8 @@ cat GUIDE_DEPLOIEMENT.md
 
 ## 🔗 Ressources
 
-- **GitHub**: https://github.com/bondomvc/framework
+- **GitHub**: https://github.com/Josuebondo/mvc
+- **Packagist**: https://packagist.org/packages/bondomvc/mvc
 - **Documentation**: Voir [README.md](README.md)
 - **Guides**:
   - [Nouveau Projet](GUIDE_NOUVEAU_PROJET.md)

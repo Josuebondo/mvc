@@ -5,6 +5,8 @@
  * Similar to Laravel's artisan command
  */
 
+use Core\Migration;
+
 if (php_sapi_name() !== 'cli') {
     die('This script can only be run from the command line.');
 }
@@ -220,8 +222,6 @@ function migrateCommand()
 {
     require __DIR__ . '/config/config.php';
     
-    use Core\Migration;
-    
     $migration = new Migration();
     $migration->runMigrations();
 }
@@ -233,8 +233,6 @@ function migrateRollback()
 {
     require __DIR__ . '/config/config.php';
     
-    use Core\Migration;
-    
     $migration = new Migration();
     $migration->rollback();
 }
@@ -245,8 +243,6 @@ function migrateRollback()
 function migrateRefresh()
 {
     require __DIR__ . '/config/config.php';
-    
-    use Core\Migration;
     
     echo "🔄 Refreshing migrations...\n";
     
