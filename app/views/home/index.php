@@ -355,7 +355,7 @@
         <!-- Header -->
         <header>
             <div style="margin-bottom: 20px;">
-                <img src="/images/logo.png" alt="BondoMVC Logo" style="height: 100px;">
+                <img src="<?php echo asset('images/logo.png'); ?>" alt="BondoMVC Logo" style="height: 100px; object-fit: contain;">
             </div>
             <h1>BondoMVC</h1>
             <p>Un framework PHP MVC léger, puissant et facile à utiliser</p>
